@@ -47,8 +47,8 @@ public class InnerClassTest {
 		memoryLogger = Logging.initializeForTest();
 		
 		// Load SimpleTarget class
-		ClassReader r2 = new ClassReader("selogger/testdata/SimpleTarget");
-		ownerClass = loader.createClass("selogger.testdata.SimpleTarget", r2.b);
+		byte[] buf = ClassLoader.getSystemResourceAsStream("selogger/testdata/SimpleTarget.class").readAllBytes();
+		ownerClass = loader.createClass("selogger.testdata.SimpleTarget", buf);
 		
 		it = new EventIterator(memoryLogger, weaveLog);
 	}
@@ -70,7 +70,7 @@ public class InnerClassTest {
 	public void testSort() throws IOException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 		// Create an instance of woven class
 		Constructor<?> c = wovenClass.getConstructor(new Class<?>[]{ownerClass});
-		Object owner = ownerClass.newInstance();
+		Object owner = ownerClass.getDeclaredConstructor().newInstance();
 		Object o = c.newInstance(owner);
 
 		// Check the correctness of the recorded event sequence

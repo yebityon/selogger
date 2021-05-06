@@ -305,7 +305,8 @@ public class OpcodesUtil {
 			return null;
 		}
 	}
-	
+
+
 	/**
 	 * @param opcode specifies a Java bytecode.
 	 * @return its string name.
@@ -317,7 +318,7 @@ public class OpcodesUtil {
 			return Integer.toString(opcode);
 		}
 	}
-	
+
 	private static String[] opcodeNames = new String[] { 
 	    "NOP", "ACONST_NULL", "ICONST_M1", "ICONST_0", 
 	    "ICONST_1", "ICONST_2", "ICONST_3", "ICONST_4", 

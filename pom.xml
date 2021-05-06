@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.naist.se.selogger</groupId>
   <artifactId>selogger</artifactId>
-  <version>0.2.2</version>
+  <version>0.2.3</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>tests</testSourceDirectory>
@@ -41,6 +41,10 @@
               <pattern>org.objectweb.asm</pattern>
               <shadedPattern>selogger.org.objectweb.asm</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>com.fasterxml.jackson.core</pattern>
+              <shadedPattern>selogger.com.fasterxml.jackson.core</shadedPattern>
+            </relocation>
           </relocations>
         </configuration>
         <executions>
@@ -58,33 +62,38 @@
   	<dependency>
   		<groupId>org.ow2.asm</groupId>
   		<artifactId>asm</artifactId>
-  		<version>6.0</version>
+  		<version>9.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.ow2.asm</groupId>
   		<artifactId>asm-tree</artifactId>
-  		<version>6.0</version>
+  		<version>9.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.ow2.asm</groupId>
   		<artifactId>asm-commons</artifactId>
-  		<version>6.0</version>
+  		<version>9.0</version>
   	</dependency>
   	<dependency>
   		<groupId>org.ow2.asm</groupId>
   		<artifactId>asm-util</artifactId>
-  		<version>6.0</version>
+  		<version>9.0</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.ow2.asm</groupId>
+  		<artifactId>asm-analysis</artifactId>
+  		<version>9.0</version>
+  	</dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>2.12.1</version>
+    </dependency>
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
   		<version>4.13.1</version>
   		<scope>test</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.ow2.asm</groupId>
-  		<artifactId>asm-analysis</artifactId>
-  		<version>6.0</version>
   	</dependency>
   </dependencies>
 </project>

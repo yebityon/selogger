@@ -27,11 +27,11 @@ If you would like to build a jar file for JDK7, please skip compilation of test 
 
 Execute your program with the Java Agent.
 
-        java -javaagent:path/to/selogger-0.2.jar [Application Options]
+        java -javaagent:path/to/selogger-0.2.3.jar [Application Options]
 
 The agent accepts options.  Each option is specified by `option=value` style with commas (","). For example:
 
-        java -javaagent:path/to/selogger-0.2.jar=output=dirname,format=freq [Application Options]
+        java -javaagent:path/to/selogger-0.2.3.jar=output=dirname,format=freq [Application Options]
 
 
 ### Output Options
@@ -45,6 +45,7 @@ The `format=` option specifies an output format.  The default is `latest` format
   * `latest` mode records the latest event data with timestamp and thread ID for each bytecode location. 
   * `nearomni` mode is an alias of `latest`.
   * `latest-simple` mode records only the latest event data for each bytecode location.
+  * `omni` mode records all the events in a stream.
   * `discard` mode discard event data, while it injects logging code into classes.
 
 In `latest` and `latesttime` mode, two additional options are available:
@@ -107,7 +108,7 @@ The default `nearomni` option generates a text file named `recentdata.txt` whose
  - Data ID representing an event
  - The number of the events observed in the execution 
  - The number of events recorded in the file
- - A list of recorded values for the events
+ - A list of recorded values (triples of a data value, a sequential number representing the order of recording, and a thread ID) for the events
 
 The following table is a list of events.
 The event name is defined in the class `EventType`.  
@@ -162,16 +163,80 @@ The event name is defined in the class `EventType`.
 |Control-flow events (LABEL)|LABEL|This event is recorded when an execution passed a particular code location. LABEL itself is not a Java bytecode, a pseudo instruction inserted by ASM bytecode manipulation library used by SELogger.|A dataId corresponding to the previous program location is recorded so that a user can trace a control-flow path.|
 |                           |CATCH_LABEL|This event is recorded when an execution entered a catch/finally block.|A dataId corresponding to the previous program location (that is likely where an exception was thrown) is recorded.|
 |                           |CATCH|When an execution entered a catch/finally block, immediately after a CATCH_LABEL event, before any instructions in the catch/finally block is executed.|Exception object caught by the block|
-|                           
 |                           |JUMP|This event represents a jump instruction in bytecode. |The event itself is not directly recorded in a trace.  The dataId of this event may appear in LABEL events.|
 |                           |DEVIDE|This event represents an arithmetic division instruction (IDIV).|The event itself is not directly recorded in a trace.  The dataId of this event may appear in LABEL events.|
+|                           |LINE_NUMBER|This event represents an execution of a line of source code.  As a single line of code may be compiled into separated bytecode blocks, a number of LINE_NUMBER events having different data ID may point to the same line number.||
 
+
+### Runtime Data Contents in the Omniscient mode
+
+#### LOG$Types.txt
+
+The file records object types.
+It is a CSV file including 6 columns.
+
+- Type ID
+- Type Name
+- Class file location
+- The superclass type ID
+- The component type ID (available for an array type) 
+- A string representation of class loader that loaded the type and followed by the class name.  This text is linked to the weaving information (`classes.txt`) described below.
+
+#### LOG$ObjectTypesNNNNN.txt
+
+This CSV file includes two columns.
+Each row represents an object.
+
+- The first column shows the object ID.
+- The second column shows the type ID.
+
+#### LOG$ExceptionNNNNN.txt
+
+This is a semi-structured CSV file records messages and stack traces of exceptions thrown during a program execution.
+Each exception is recorded by the following lines.
+
+- Message line including three columns
+  - Object ID of the Throwable object
+  - A literal "M"
+  - Textual message returned by `Throwable.getMessage()`
+- Cause Object
+  - Object ID of the Throwable object
+  - A literal "CS"
+  - Object ID of the cause object returned by `Throwable.getCause()`
+  - If the object has suppressed exceptions (returned by `getSuppressed()`), their object IDs
+- Stack Trace Elements (Each line corresponds to a single line of a stack trace)
+  - Object ID of the Throwable object
+  - A literal "S"
+  - A literal "T" or "F": "T" represents the method is a native method.
+  - Class Name
+  - Method Name
+  - File Name
+  - Line Number
+
+#### LOG$StringNNNNN.txt
+
+The file records the contents of string objects used in an execution.
+It is a CSV file format; each line has three fields.
+
+- The object ID of the string
+- The length of the string
+- The content escaped as a JSON string
+
+## Weaving Events
+
+The weaver component generates the following files during the weaving. 
+ - `weaving.properties`: The configuration options recognized by the weaver.
+ - `classes.txt`: A list of woven classes.  The content is defined in the `selogger.weaver.ClassInfo` class.
+ - `methods .txt`: A list of methods in the woven classes.  The content is defined in the `selogger.weaver.MethodInfo` class.
+ - `dataids.txt`: A list of Data IDs. 
+ - `log.txt`: Recording errors encountered during bytecode manipulation.
  
  
 ## Limitation
 
 The logging feature for some instructions (in particular, JUMP, RET, INVOKEDYNAMIC instructions) has not been tested well due to the lack of appropriate test cases.
 
+To record Local variable names and line numbers, the tool uses debugging information embedded in class files. 
 
 ## Differences from master branch version
 
@@ -186,3 +251,13 @@ The major differences are:
  * Improved reliability with JUnit test cases
 
 The documentation for the master branch is available in the `doc` directory.
+
+
+## Reference
+
+The design of this tool is partly explained in the following article.
+
+        Kazumasa Shimari, Takashi Ishio, Tetsuya Kanda, Naoto Ishida, Katsuro Inoue: 
+        "NOD4J: Near-omniscient debugging tool for Java using size-limited execution trace", 
+        Science of Computer Programming, Volume 206, 2021, 102630, ISSN 0167-6423,
+        https://doi.org/10.1016/j.scico.2021.102630.

@@ -9,12 +9,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.TryCatchBlockSorter;
 
+import selogger.logging.util.TypeIdUtil;
 import selogger.weaver.method.JSRInliner;
 import selogger.weaver.method.MethodTransformer;
 
 /**
- * A class implements weaves logging code into a Java class file. 
- * Please use static transform(byte[]) or transform(inputFilename, outputFilename) method.
+ * This class weaves logging code into a Java class file. 
+ * The constructors execute the weaving process.
  */
 public class ClassTransformer extends ClassVisitor {
 
@@ -43,6 +44,7 @@ public class ClassTransformer extends ClassVisitor {
 		// Start weaving, and store the result to a byte array
         reader.accept(this, ClassReader.EXPAND_FRAMES);
         weaveResult = classWriter.toByteArray();
+        classLoaderIdentifier = TypeIdUtil.getClassLoaderIdentifier(loader, weaver.getFullClassName());
 	}
 
 	/**
@@ -67,6 +69,7 @@ public class ClassTransformer extends ClassVisitor {
 	private String sourceFileName;
 	private ClassWriter classWriter;
 	private byte[] weaveResult;
+	private String classLoaderIdentifier;
 	
 	private String PACKAGE_SEPARATOR = "/";
 	
@@ -96,6 +99,13 @@ public class ClassTransformer extends ClassVisitor {
 	 */
 	public String getPackageName() {
 		return packageName;
+	}
+	
+	/**
+	 * @return the class loader identifier
+	 */
+	public String getClassLoaderIdentifier() {
+		return classLoaderIdentifier;
 	}
 	
 	/**

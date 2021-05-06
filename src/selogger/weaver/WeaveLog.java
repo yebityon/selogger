@@ -45,7 +45,9 @@ public class WeaveLog {
 
 	
 	/**
-	 * Record the full class name obtained from the target class file.
+	 * Record the current target class with a full class name obtained from a target class file.
+	 * This is separated from the constructor because the class name is unavailable 
+	 * at the beginning of the weaving process.
 	 * @param name
 	 */
 	public void setFullClassName(String name) {
@@ -53,7 +55,7 @@ public class WeaveLog {
 	}
 
 	/**
-	 * @return the full class name.
+	 * @return the full class name that is currently woven.
 	 */
 	public String getFullClassName() {
 		return fullClassName;
@@ -82,8 +84,8 @@ public class WeaveLog {
 	 * @param access represents modifiers, e.g. static.
 	 * @param sourceFileName specifies a source file name recorded in the class file.
 	 */
-	public void startMethod(String className, String methodName, String methodDesc, int access, String sourceFileName) {
-		MethodInfo entry = new MethodInfo(classId, methodId, className, methodName, methodDesc, access, sourceFileName);
+	public void startMethod(String className, String methodName, String methodDesc, int access, String sourceFileName, String methodHash) {
+		MethodInfo entry = new MethodInfo(classId, methodId, className, methodName, methodDesc, access, sourceFileName, methodHash);
 		methodEntries.add(entry);
 		methodId++;
 	}
